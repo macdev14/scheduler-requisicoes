@@ -1,0 +1,9 @@
+{
+    "name": "msautentication",
+    "version": "1.0.0",
+    "description": "AUTH API",
+    "title": "MS Autentication",
+    "template": {
+        "forceLanguage": "en"
+    }
+}

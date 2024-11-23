@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduller-auth
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: scheduller-auth
+  template:
+    metadata:
+      labels:
+        app: scheduller-auth
+    spec:
+      containers:
+        - name: app
+          image: lmtp/scheduler-app:v01
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: uploads-storage
+              mountPath: /uploads 
+          env:
+            - name: POSTGRES_HOST
+              value: "postgres"
+            - name: POSTGRES_DB
+              value: "mydatabase"
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "admin"
+            - name: MONGO_HOST
+              value: "mongo"
+            - name: MONGO_PORT
+              value: "27017"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+      volumes:
+        - name: uploads-storage
+          persistentVolumeClaim:
+            claimName: scheduler-auth-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduller-auth-service
+spec:
+  selector:
+    app: scheduller-auth
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
