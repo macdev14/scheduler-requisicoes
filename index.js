@@ -29,6 +29,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); //serve
 app.use('/api-docjs', express.static('./public/apidocjs')); //available route at http://localhost:5565/api-docjs/
 app.use("/api", require("./routes/userRoute")); //user route
 
+app.get("/", (req, res) => {
+    res.send("Hello, World!");
+  });
+  
+
 app.listen(port, () => {
     console.log("Server running on port: " + port);
 })

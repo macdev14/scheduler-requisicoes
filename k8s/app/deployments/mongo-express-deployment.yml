@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mongo-express
-          image: lmtp/custom-mongo-express:v01
+          image: cmerbruno/custom-mongo-express:v01
           ports:
             - containerPort: 8081
           env:

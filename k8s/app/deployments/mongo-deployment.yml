@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: lmtp/custom-mongo:v01
+          image: cmerbruno/custom-mongo:v01
           ports:
             - containerPort: 27017
           env:
