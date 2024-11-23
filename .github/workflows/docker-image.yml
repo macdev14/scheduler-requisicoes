@@ -29,8 +29,8 @@ jobs:
 
       # Step 4: Build and optionally tag the Docker image
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag lmtp/scheduler-auth:latest
+        run: docker build . --file Dockerfile --tag lmtp/scheduler-requisicoes:latest
         
       - name: Push Docker image
-        run: docker push lmtp/scheduler-auth:latest
+        run: docker push lmtp/scheduler-requisicoes:latest
 
