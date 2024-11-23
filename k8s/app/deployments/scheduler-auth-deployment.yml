@@ -16,7 +16,7 @@ spec:
         - name: app
           image: cmerbruno/teste-k8s:v01
           ports:
-            - containerPort: 8080
+            - containerPort: 2002
           volumeMounts:
             - name: uploads-storage
               mountPath: /uploads 
@@ -44,6 +44,6 @@ spec:
     app: scheduller-auth
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 2002
+      targetPort: 2002
   type: LoadBalancer
