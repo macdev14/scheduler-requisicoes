@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: cmerbruno/teste-k8s:v01
+          image: lmtp/scheduler-auth:latest
           ports:
             - containerPort: 2002
           volumeMounts:
