@@ -22,11 +22,11 @@ spec:
               value: "admin@domain.com"
             - name: PGADMIN_DEFAULT_PASSWORD
               value: "admin"
-            - name: PGADMIN_CONFIG_SERVER_MODE
-              value: "True"
+            - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
+              value: "False"
           volumeMounts:
             - name: pgadmin-data
-              mountPath: /var/lib/pgadmin
+              mountPath: /var/lib/pgadmin/storage
           resources:
             requests:
               memory: "128Mi"
@@ -36,7 +36,7 @@ spec:
               cpu: "500m"
       volumes:
         - name: pgadmin-data
-          emptyDir: {}
+          
 ---
 apiVersion: v1
 kind: Service
@@ -45,9 +45,10 @@ metadata:
 spec:
   selector:
     app: pgadmin
-  type: NodePort 
+  # type: NodePort
+  type: LoadBalancer 
   ports:
     - protocol: TCP
-      port: 80           
+      port: 5505           
       targetPort: 80     
-      nodePort: 31002    
+      # nodePort: 31002    
