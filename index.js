@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true })); //allowing for extended synt
 app.use('/', express.static(path.join(__dirname, 'public'))); //available static route at http://localhost:2003
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); //serve api documentation
 app.use('/api-docjs', express.static('./public/apidocjs')); //available route at http://localhost:2003/api-docjs/
-app.use("/api", require("./routes/requisitionRoute")); //user route
+app.use("/api", require("./controllers/routes/requisitionRoute")); //user route
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");
