@@ -1,6 +1,6 @@
 'use strict'
 const User = require("../models/userModel");
-const Document = require('../models/documentModel');
+const Document = require('../models/requisitionModel');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require('multer');

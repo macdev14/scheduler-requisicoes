@@ -10,5 +10,4 @@ const documentSchema = new Schema({                     //Document will represen
     active: {type: String, required: true}
 },{collection:'documents'});
 const Document = mongoose.model("Document", documentSchema);
-
 module.exports = Document;

@@ -24,10 +24,10 @@ app.use(bodyParser.json()); //parse application/json and application/x-www-form-
 app.use(bodyParser.urlencoded({ extended: true })); //allowing for extended syntax (i.e. arrays, objects, nested objects, etc.)
 
 //routes
-app.use('/', express.static(path.join(__dirname, 'public'))); //available static route at http://localhost:5565
+app.use('/', express.static(path.join(__dirname, 'public'))); //available static route at http://localhost:2003
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); //serve api documentation
-app.use('/api-docjs', express.static('./public/apidocjs')); //available route at http://localhost:5565/api-docjs/
-app.use("/api", require("./routes/userRoute")); //user route
+app.use('/api-docjs', express.static('./public/apidocjs')); //available route at http://localhost:2003/api-docjs/
+app.use("/api", require("./controllers/routes/requisitionRoute")); //user route
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");
