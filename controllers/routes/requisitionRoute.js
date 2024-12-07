@@ -1,5 +1,4 @@
 const { 
-    requisitionPersistence, 
     requisitionCreatePersistence, 
     requisitionUpdatePersistence, 
     requisitionDeletePersistence, 
@@ -7,7 +6,7 @@ const {
     requisitionGetAllPersistence 
 } = require("../../use-cases");
 
-const requisitionInteractorMongoDB = require("../../use-cases/requisitionInteractorMongoDB");
+const requisitionInteractorMongoDB = require("../use-cases/requisitionInteractorMongoDB");
 const express = require("express");
 const { body, param, validationResult } = require("express-validator");
 const authMiddleware = require("../../middleware/authMiddleware");
@@ -87,12 +86,12 @@ router.get(
  */
 router.put(
     "/:id",
-    authMiddleware,
-    [
-        param("id").isMongoId().withMessage("Invalid requisition ID"),
-        body("title").optional().isString().withMessage("Invalid title"),
-        body("description").optional().isString().withMessage("Invalid description"),
-    ],
+    // authMiddleware,
+    // [
+    //     param("id").isMongoId().withMessage("Invalid requisition ID"),
+    //     body("title").optional().isString().withMessage("Invalid title"),
+    //     body("description").optional().isString().withMessage("Invalid description"),
+    // ],
     async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -122,8 +121,8 @@ router.put(
  */
 router.delete(
     "/:id",
-    authMiddleware,
-    [param("id").isMongoId().withMessage("Invalid requisition ID")],
+    // authMiddleware,
+    // [param("id").isMongoId().withMessage("Invalid requisition ID")],
     async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -150,7 +149,7 @@ router.delete(
  */
 router.get(
     "/",
-    authMiddleware,
+    // authMiddleware,
     async (req, res, next) => {
         try {
             const requisitions = await requisitionInteractorMongoDB.getAll(
