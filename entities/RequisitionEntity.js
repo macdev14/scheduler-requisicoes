@@ -1,6 +1,6 @@
 exports.RequisitionEntity = class RequisitionEntity {
     constructor(requisition) {
-        this.user_id = requisition.user_id;
+        this.token = requisition.token;
         this.event_name = requisition.event_name;
         this.start_date = requisition.start_date || new Date();
         this.end_date = requisition.end_date || null;

@@ -1,9 +1,17 @@
 'use strict';
-const Requisition = require("../framework/db/mongoDB/models/requisitionModel");
 
-exports.requisitionGetAllPersistence = async (event) => {
-    console.log("requsitionGetAllPersistence", event);
-    const {token, active} = event;
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const moment = require('moment');
+require('dotenv').config();
+require("../framework/db/mongoDB/models/requisitionModel");
+
+const Requisition = mongoose.model("Requisition");
+
+ 
+exports.requisitionGetAllPersistence = async (requisition) => {
+    // console.log("requisitionGetAllPersistence", requisition);
+    const {token, active} = requisition;
 
     try {
         if (!token) {
@@ -15,7 +23,7 @@ exports.requisitionGetAllPersistence = async (event) => {
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER) {
+            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_EXTERNAL) {
                 const events = await Requisition.find({ active });
 
                 if (!events || events.length === 0) {

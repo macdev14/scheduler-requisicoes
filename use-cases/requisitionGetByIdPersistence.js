@@ -1,15 +1,40 @@
 'use strict';
-const Requisition = require("../framework/db/mongoDB/models/requisitionModel");
 
-exports.requisitionGetByIdPersistence = async ({ id }) => {
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+require('dotenv').config();
+require("../framework/db/mongoDB/models/requisitionModel");
+
+const Requisition = mongoose.model("Requisition");
+exports.requisitionGetByIdPersistence = async ({id, token, active}) => {
+    // console.log("requisitionGetAllPersistence", id,token );
+
     try {
-        const requisition = await Requisition.findById(id);
-        if (!requisition) {
-            return { status: 404, message: "Requisition not found" };
+        if (!token) {
+            return { status: 400, message: "token required" };
         }
-        return { status: 200, requisition };
+
+
+
+        try {
+            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_EXTERNAL) {
+                const requisition = await Requisition.find({id, active });
+
+                if (!requisition || requisition.length === 0) {
+                    return { status: 404, message: "Requisition not found" };
+                }
+                return { status: 200, message: events };
+            }
+            return ({status: 403, message: "Access denied. Insufficient permissions."});
+        } catch (err) {
+            console.log("err", err);
+            return ({status: 403, message: "Access denied"});
+        }
+
     } catch (error) {
-        console.error("Error fetching requisition by ID:", error);
-        return { status: 500, message: "Internal server error" };
+        console.log("error", error);
+        return { status: 500, message: "Something went wrong" };
     }
 };

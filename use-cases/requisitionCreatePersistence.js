@@ -1,19 +1,32 @@
 'use strict';
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const moment = require('moment');
+require('dotenv').config();
 require("../framework/db/mongoDB/models/requisitionModel");
 
+const parseDate = (dateString) => {
+    const formats = ['DD/MM/YYYY', 'YYYY/MM/DD'];
+    const date = moment(dateString, formats, true);
+    return date.isValid() ? date.toDate() : null;
+};
+
 const Requisition = mongoose.model("Requisition");
-exports.requisitionCreatePersistence = async (event) => {
+
+
+exports.requisitionCreatePersistence = async (requisition) => {
     //console.log("event", event);
-    const { event_name, start_date, end_date, approved, active, products } = event;
+   
 
     try {
+        const { event_name, start_date, end_date, approved, active, products, token } = requisition;
+        console.log("token", token);
+        console.log("requisition", requisition);
         if (!event_name || !start_date || !end_date || !token || products.length == 0) {
-            return { status: 400, message: "token, name, start_date, and end_date are required" };
+            return { status: 400, message: "token, event name, products, start_date, and end_date are required" };
         }
 
-        if (name.length > process.env.EVENT_NAME_MAX_SIZE) {
+        if (event_name.length > process.env.EVENT_NAME_MAX_SIZE) {
             return { status: 400, message: `event name must be less than ${process.env.EVENT_NAME_MAX_SIZE} characters` };
         }
 
@@ -23,12 +36,13 @@ exports.requisitionCreatePersistence = async (event) => {
         if (!parsedStartDate || !parsedEndDate) {
             return { status: 400, message: "Invalid date format. Use dd/mm/yyyy or yyyy/mm/dd" };
         }
-
+ 
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER) {
-                const createEvent = {
+            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_EXTERNAL) {
+                const createRequisition = {
+                    user_id: decoded.id,
                     event_name,
                     start_date: parsedStartDate,
                     end_date: parsedEndDate,
@@ -36,9 +50,10 @@ exports.requisitionCreatePersistence = async (event) => {
                     active,
                     products
                 };
-                await Requisition.create(createEvent);
-                console.log("createRequisition", createEvent);
-                return { status: 201, message: "Requisition created successfully" };
+                console.log("createRequisition", createRequisition);
+                const result = await Requisition.create(createRequisition);
+                console.log("createRequisition", createRequisition);
+                return { status: 201, id: result.id , message: "Requisition created successfully" };
             }
             return ({status: 403, message: "Access denied. Insufficient permissions."});
         } catch (err) {

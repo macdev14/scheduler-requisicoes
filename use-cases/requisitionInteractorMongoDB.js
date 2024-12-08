@@ -2,10 +2,16 @@
 
 const { RequisitionEntity } = require("../entities/RequisitionEntity");
 
-exports.create = async ({ requisitionCreatePersistence }, requisition_body) => {
+/**
+ * Creates a new Requisition and persists it in the database.
+ * @param {Object} dependencies - Persistence dependencies
+ * @param {Object} requisition_body - Requisition data to be saved
+ * @returns {Promise<Object>} Response object
+ */
+exports.create = async ({ requisitionCreatePersistence }, requisition) => {
     try {
-        const requisition = new RequisitionEntity(requisition_body);
-        const createRequisition = await requisitionCreatePersistence(requisition);
+        const requisitionEntity = new RequisitionEntity(requisition);
+        const createRequisition = await requisitionCreatePersistence(requisitionEntity);
         return createRequisition;
     } catch (error) {
         console.log(error);
@@ -13,23 +19,24 @@ exports.create = async ({ requisitionCreatePersistence }, requisition_body) => {
     }
 };
 
-exports.getById = async ({ requisitionGetByIdPersistence }, { id }) => {
+exports.getById = async ({ requisitionGetByIdPersistence }, { id, token }) => {
     try {
-        const requisition = await requisitionGetByIdPersistence(id);
+        const active = true;
+        const requisition = await requisitionGetByIdPersistence({ id, token, active });
         if (!requisition) {
             return { status: 404, message: "Requisition not found" };
         }
-        return { status: 200, message: "Requisition retrieved successfully", data: requisition };
+        return requisition;
     } catch (error) {
         console.log(error);
         return { status: 500, message: "Something went wrong: " + error };
     }
 };
 
-exports.update = async ({ requisitionUpdatePersistence }, { id, title, description, updatedBy }) => {
+exports.update = async ({ requisitionUpdatePersistence }, { id, event_name, start_date, end_date, approved, active, products, token }) => {
     try {
-        const updatedData = { title, description, updatedBy, updatedAt: new Date() };
-        const result = await requisitionUpdatePersistence(id, updatedData);
+        const updatedData = { id, event_name, start_date, end_date, approved, active, products, token };
+        const result = await requisitionUpdatePersistence(updatedData);
         if (!result) {
             return { status: 404, message: "Requisition not found" };
         }
@@ -40,9 +47,9 @@ exports.update = async ({ requisitionUpdatePersistence }, { id, title, descripti
     }
 };
 
-exports.delete = async ({ requisitionDeletePersistence }, { id, deletedBy }) => {
+exports.delete = async ({ requisitionDeletePersistence }, { id, token }) => {
     try {
-        const result = await requisitionDeletePersistence(id, deletedBy);
+        const result = await requisitionDeletePersistence(id, token);
         if (!result) {
             return { status: 404, message: "Requisition not found" };
         }
@@ -53,9 +60,10 @@ exports.delete = async ({ requisitionDeletePersistence }, { id, deletedBy }) => 
     }
 };
 
-exports.getAll = async ({ requisitionGetAllPersistence }, { createdBy }) => {
+exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
     try {
-        const requisitions = await requisitionGetAllPersistence(createdBy);
+        const active = true;
+        const requisitions = await requisitionGetAllPersistence({ active, id, token });
         if (!requisitions || requisitions.length === 0) {
             return { status: 404, message: "No requisitions found" };
         }

@@ -21,16 +21,19 @@ router.route("/requisition/create").post(
   
     async (req, res, next) => {
 
-        const { event_name, start_date, end_date, Products, approved, active, products } = req.body;
-        const token = req.headers['token'];
-        if(!token){
-            return { status: 400, message: "token required" };
-        }
-        console.log(req.body)
+        const { event_name, start_date, end_date, approved, active, products } = req.body;
+       
+       
+        
         try {
+            const token = req.headers['token'];
+            console.log(token)
+            if(!token || token==undefined || token==null){
+                throw new Error("token required");
+            }
             const requisition = await requisitionInteractorMongoDB.create(
                 { requisitionCreatePersistence },
-                { token, event_name, start_date, end_date, Products, approved, active, products }
+                { token, event_name, start_date, end_date, approved, active, products }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {
@@ -48,11 +51,12 @@ router.route("/requisition/create").post(
 router.route("/requisition/getById").get(
     async (req, res, next) => {
 
-        const { id } = req.params;
+        const { id } = req.body;
         try {
+            const token = req.headers['token'];
             const requisition = await requisitionInteractorMongoDB.getById(
                 { requisitionGetByIdPersistence },
-                { id }
+                { id, token }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {
@@ -73,13 +77,17 @@ router.route("/requisition/update").put(
 
     async (req, res, next) => {
 
-        const { id } = req.params;
-        const { title, description } = req.body;
+       
+     
 
         try {
+            const {id, event_name, start_date, end_date, approved, active, products } = req.body;
+            const token = req.headers['token'];
+            console.log("token", token);
+            console.log("requisition", req.body);
             const requisition = await requisitionInteractorMongoDB.update(
                 { requisitionUpdatePersistence },
-                { id, title, description, updatedBy: req.user.id }
+                { id, event_name, start_date, end_date, approved, active, products, token }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {
@@ -98,10 +106,11 @@ router.route("/requisition/delete").delete(
     async (req, res, next) => {
  
         const { id } = req.body;
+        const token = req.headers['token'];
         try {
             const requisition = await requisitionInteractorMongoDB.delete(
                 { requisitionDeletePersistence },
-                { id, deletedBy: req.user.id }
+                { id, token }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {
@@ -120,9 +129,10 @@ router.route("/requisition/getAll").get(
         
         try {
             const token = req.headers['token'];
+            const active = true;
             const requisitions = await requisitionInteractorMongoDB.getAll(
                 { requisitionGetAllPersistence },
-                { token }
+                { active, token }
             );
             res.status(requisitions.status).json(requisitions);
         } catch (error) {

@@ -11,6 +11,7 @@ const ProductSchema = new mongoose.Schema({
 });
 
 const RequisitionSchema = new mongoose.Schema({
+  user_id: { type: String, required: true },
   event_name: { type: String, required: true },
   start_date: { type: Date, required: true },
   end_date: { type: Date, required: true },
