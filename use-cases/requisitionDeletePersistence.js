@@ -20,7 +20,7 @@ exports.requisitionDeletePersistence = async ({ id, token }) => {
             if (has_auth) {
                     console.log("id AUTH", id);
                     const result = await Requisition.updateOne({ _id:id }, { $set: { active: false } });
-                    return result ? { status: 200, message: "Deleted Successfully" } : { status: 404, message: result.message };
+                    return result ? { status: 200, message: "Deleted Successfully" } : { status: 404, message: "Requisition not found" };
             }
 
             return ({status: 403, message: "Access denied. Insufficient permissions."});
