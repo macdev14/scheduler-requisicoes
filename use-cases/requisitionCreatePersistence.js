@@ -20,8 +20,7 @@ exports.requisitionCreatePersistence = async (requisition) => {
 
     try {
         const { event_name, start_date, end_date, approved, active, products, token } = requisition;
-        console.log("token", token);
-        console.log("requisition", requisition);
+        
         if (!event_name || !start_date || !end_date || !token || products.length == 0) {
             return { status: 400, message: "token, event name, products, start_date, and end_date are required" };
         }
@@ -50,9 +49,9 @@ exports.requisitionCreatePersistence = async (requisition) => {
                     active,
                     products
                 };
-                console.log("createRequisition", createRequisition);
+              
                 const result = await Requisition.create(createRequisition);
-                console.log("createRequisition", createRequisition);
+               
                 return { status: 201, id: result.id , message: "Requisition created successfully" };
             }
             return ({status: 403, message: "Access denied. Insufficient permissions."});

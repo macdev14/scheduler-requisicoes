@@ -18,7 +18,7 @@ exports.requisitionDeletePersistence = async ({ id, token }) => {
         
            const has_auth = decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_USER;
             if (has_auth) {
-                    console.log("id AUTH", id);
+                   
                     const result = await Requisition.updateOne({ _id:id }, { $set: { active: false } });
                     return result ? { status: 200, message: "Deleted Successfully" } : { status: 404, message: "Requisition not found" };
             }

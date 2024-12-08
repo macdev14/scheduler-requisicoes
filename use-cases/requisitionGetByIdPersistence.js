@@ -7,7 +7,7 @@ require("../framework/db/mongoDB/models/requisitionModel");
 
 const Requisition = mongoose.model("Requisition");
 exports.requisitionGetByIdPersistence = async ({id, token, active}) => {
-    console.log("requisitionGetAllPersistence", id );
+  
 
     try {
         if (!token) {

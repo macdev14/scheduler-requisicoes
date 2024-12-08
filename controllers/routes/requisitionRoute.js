@@ -27,7 +27,7 @@ router.route("/requisition/create").post(
         
         try {
             const token = req.headers['token'];
-            console.log(token)
+            
             if(!token || token==undefined || token==null){
                 throw new Error("token required");
             }
@@ -83,8 +83,7 @@ router.route("/requisition/update").put(
         try {
             const {id, event_name, start_date, end_date, approved, active, products } = req.body;
             const token = req.headers['token'];
-            console.log("token", token);
-            console.log("requisition", req.body);
+           
             const requisition = await requisitionInteractorMongoDB.update(
                 { requisitionUpdatePersistence },
                 { id, event_name, start_date, end_date, approved, active, products, token }
@@ -145,3 +144,4 @@ router.route("/requisition/getAll").get(
 
 
 module.exports = router;
+

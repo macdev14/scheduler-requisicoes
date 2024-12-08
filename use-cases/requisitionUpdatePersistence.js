@@ -14,13 +14,10 @@ const parseDate = (dateString) => {
 };
 
 exports.requisitionUpdatePersistence = async (requisition) => {
-    //console.log("event", event);
    
-
     try {
         const { id, event_name, start_date, end_date, approved, active, products, token } = requisition;
-        console.log("token", token);
-        console.log("requisition", requisition);
+      
         if (!id || !event_name || !start_date || !end_date || !token || products.length == 0) {
             return { status: 400, message: "token, event name, products, start_date, and end_date are required" };
         }
@@ -55,12 +52,11 @@ exports.requisitionUpdatePersistence = async (requisition) => {
                 if (approved) updateRequisition.approved = approved;
                 if (active) updateRequisition.active = active;
                 if (products) updateRequisition.products = products;
-                console.log("updateRequisition", updateRequisition);
-                console.log("id", id);
-                // await Event.findByIdAndUpdate(id, updateEvent, { new: true });
+              
+               
                 
                 const result = await Requisition.findByIdAndUpdate(id, updateRequisition, { new: true });
-                console.log("Updated Requisition ", result);
+              
                 return  result;
             }
             return ({status: 403, message: "Access denied. Insufficient permissions."});
