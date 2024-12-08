@@ -102,7 +102,7 @@ router.route("/requisition/update").put(
  * @apiGroup Requisition
  * @apiParam {String} id Requisition ID
  */
-router.route("/requisition/delete").delete(
+router.route("/requisition/delete").put(
     async (req, res, next) => {
  
         const { id } = req.body;

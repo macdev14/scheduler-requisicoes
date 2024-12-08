@@ -49,11 +49,11 @@ exports.update = async ({ requisitionUpdatePersistence }, { id, event_name, star
 
 exports.delete = async ({ requisitionDeletePersistence }, { id, token }) => {
     try {
-        const result = await requisitionDeletePersistence(id, token);
+        const result = await requisitionDeletePersistence({id, token});
         if (!result) {
             return { status: 404, message: "Requisition not found" };
         }
-        return { status: 200, message: "Requisition deleted successfully" };
+        return result;
     } catch (error) {
         console.log(error);
         return { status: 500, message: "Something went wrong: " + error };
@@ -67,7 +67,7 @@ exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
         if (!requisitions || requisitions.length === 0) {
             return { status: 404, message: "No requisitions found" };
         }
-        return { status: 200, message: "Requisitions retrieved successfully", data: requisitions };
+        return requisitions ;
     } catch (error) {
         console.log(error);
         return { status: 500, message: "Something went wrong: " + error };

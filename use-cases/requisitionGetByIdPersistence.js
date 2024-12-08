@@ -7,7 +7,7 @@ require("../framework/db/mongoDB/models/requisitionModel");
 
 const Requisition = mongoose.model("Requisition");
 exports.requisitionGetByIdPersistence = async ({id, token, active}) => {
-    // console.log("requisitionGetAllPersistence", id,token );
+    console.log("requisitionGetAllPersistence", id );
 
     try {
         if (!token) {
@@ -20,12 +20,12 @@ exports.requisitionGetByIdPersistence = async ({id, token, active}) => {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
             if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_EXTERNAL) {
-                const requisition = await Requisition.find({id, active });
+                const requisition = await Requisition.findById(id);
 
-                if (!requisition || requisition.length === 0) {
+                if (!requisition || requisition.length === 0 || !requisition.active) {
                     return { status: 404, message: "Requisition not found" };
                 }
-                return { status: 200, message: events };
+                return { status: 200, message: requisition };
             }
             return ({status: 403, message: "Access denied. Insufficient permissions."});
         } catch (err) {
