@@ -23,6 +23,9 @@ router.route("/requisition/create").post(
 
         const { event_name, start_date, end_date, Products, approved, active, products } = req.body;
         const token = req.headers['token'];
+        if(!token){
+            return { status: 400, message: "token required" };
+        }
         console.log(req.body)
         try {
             const requisition = await requisitionInteractorMongoDB.create(
