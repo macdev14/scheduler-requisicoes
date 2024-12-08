@@ -1,15 +1,11 @@
-const { 
-    requisitionCreatePersistence, 
-    requisitionUpdatePersistence, 
-    requisitionDeletePersistence, 
-    requisitionGetByIdPersistence, 
-    requisitionGetAllPersistence 
-} = require("../../use-cases");
+const { requisitionCreatePersistence } = require("../../use-cases/requisitionCreatePersistence");
+const { requisitionUpdatePersistence} = require("../../use-cases/requisitionUpdatePersistence");
+const { requisitionDeletePersistence } = require("../../use-cases/requisitionDeletePersistence");
+const { requisitionGetByIdPersistence } = require("../../use-cases/requisitionGetByIdPersistence");
+const { requisitionGetAllPersistence } = require("../../use-cases/requisitionGetAllPersistence");
+const  requisitionInteractorMongoDB  = require("../../use-cases/requisitionInteractorMongoDB");
 
-const requisitionInteractorMongoDB = require("../use-cases/requisitionInteractorMongoDB");
 const express = require("express");
-const { body, param, validationResult } = require("express-validator");
-const authMiddleware = require("../../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -21,24 +17,17 @@ const router = express.Router();
  * @apiParam {String} description Requisition description
  * @apiParam {String} token JSON Web Token for authentication
  */
-router.post(
-    "/",
-    authMiddleware,
-    [
-        body("title").isString().notEmpty().withMessage("Title is required"),
-        body("description").isString().notEmpty().withMessage("Description is required"),
-    ],
+router.route("/requisition/create").post(
+  
     async (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
 
-        const { title, description } = req.body;
+        const { event_name, start_date, end_date, Products, approved, active, products } = req.body;
+        const token = req.headers['token'];
+        console.log(req.body)
         try {
             const requisition = await requisitionInteractorMongoDB.create(
                 { requisitionCreatePersistence },
-                { title, description, createdBy: req.user.id }
+                { token, event_name, start_date, end_date, Products, approved, active, products }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {
@@ -53,15 +42,8 @@ router.post(
  * @apiGroup Requisition
  * @apiParam {String} id Requisition ID
  */
-router.get(
-    "/:id",
-    authMiddleware,
-    [param("id").isMongoId().withMessage("Invalid requisition ID")],
+router.route("/requisition/getById").get(
     async (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
 
         const { id } = req.params;
         try {
@@ -84,19 +66,9 @@ router.get(
  * @apiParam {String} title Requisition title
  * @apiParam {String} description Requisition description
  */
-router.put(
-    "/:id",
-    // authMiddleware,
-    // [
-    //     param("id").isMongoId().withMessage("Invalid requisition ID"),
-    //     body("title").optional().isString().withMessage("Invalid title"),
-    //     body("description").optional().isString().withMessage("Invalid description"),
-    // ],
+router.route("/requisition/update").put(
+
     async (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
 
         const { id } = req.params;
         const { title, description } = req.body;
@@ -119,17 +91,10 @@ router.put(
  * @apiGroup Requisition
  * @apiParam {String} id Requisition ID
  */
-router.delete(
-    "/:id",
-    // authMiddleware,
-    // [param("id").isMongoId().withMessage("Invalid requisition ID")],
+router.route("/requisition/delete").delete(
     async (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const { id } = req.params;
+ 
+        const { id } = req.body;
         try {
             const requisition = await requisitionInteractorMongoDB.delete(
                 { requisitionDeletePersistence },
@@ -147,14 +112,14 @@ router.delete(
  * @apiName GetAllRequisitions
  * @apiGroup Requisition
  */
-router.get(
-    "/",
-    // authMiddleware,
+router.route("/requisition/getAll").get(
     async (req, res, next) => {
+        
         try {
+            const token = req.headers['token'];
             const requisitions = await requisitionInteractorMongoDB.getAll(
                 { requisitionGetAllPersistence },
-                { createdBy: req.user.id }
+                { token }
             );
             res.status(requisitions.status).json(requisitions);
         } catch (error) {
