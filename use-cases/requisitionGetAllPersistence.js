@@ -10,7 +10,7 @@ const Requisition = mongoose.model("Requisition");
 
  
 exports.requisitionGetAllPersistence = async (requisition) => {
-    // console.log("requisitionGetAllPersistence", requisition);
+    
     const {token, active} = requisition;
 
     try {
