@@ -52,7 +52,24 @@ exports.requisitionUpdatePersistence = async (requisition) => {
                 if (approved) updateRequisition.approved = approved;
                 if (active) updateRequisition.active = active;
                 if (products) updateRequisition.products = products;
-              
+                const requisitions = await Requisition.find({ active,
+                    start_date: { $gte: parsedStartDate },  // Greater than or equal to start date
+                    end_date: { $lte: parsedEndDate }       // Less than or equal to end date
+                 });
+                let has = false
+                requisitions.forEach(requisition => { 
+                        requisition.products.forEach(product_db => {
+                            products.forEach(product => {
+
+                                if(product_db.id == product.id && !product_db.quantity < product.quantity){
+                                    has = true
+                                }
+                            })
+                        })
+                })
+                if(has){
+                    return { status: 400, message: "Products already reserved" };
+                }
                
                 
                 const result = await Requisition.findByIdAndUpdate(id, updateRequisition, { new: true });

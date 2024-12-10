@@ -40,7 +40,7 @@ exports.update = async ({ requisitionUpdatePersistence }, { id, event_name, star
         if (!result) {
             return { status: 404, message: "Requisition not found" };
         }
-        return { status: 200, message: "Requisition updated successfully", data: result };
+        return result;
     } catch (error) {
         console.log(error);
         return { status: 500, message: "Something went wrong: " + error };

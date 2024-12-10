@@ -36,7 +36,7 @@ exports.requisitionCreatePersistence = async (requisition) => {
                     start_date: { $gte: parsedStartDate },  // Greater than or equal to start date
                     end_date: { $lte: parsedEndDate }       // Less than or equal to end date
                  });
-                const has = false
+                let has = false
                 requisitions.forEach(requisition => { 
                         requisition.products.forEach(product_db => {
                             products.forEach(product => {
