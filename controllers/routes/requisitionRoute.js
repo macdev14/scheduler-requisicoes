@@ -3,6 +3,7 @@ const { requisitionUpdatePersistence} = require("../../use-cases/requisitionUpda
 const { requisitionDeletePersistence } = require("../../use-cases/requisitionDeletePersistence");
 const { requisitionGetByIdPersistence } = require("../../use-cases/requisitionGetByIdPersistence");
 const { requisitionGetAllPersistence } = require("../../use-cases/requisitionGetAllPersistence");
+const { requisitionApprove } = require("../../use-cases/requisitionApprove");
 const { requisitionGetCatalog } = require("../../use-cases/requisitionGetCatalog");
 const  requisitionInteractorMongoDB  = require("../../use-cases/requisitionInteractorMongoDB");
 
@@ -140,6 +141,23 @@ router.route("/requisition/catalog").get(
             const requisitions = await requisitionInteractorMongoDB.getCatalog(
                 { requisitionGetCatalog },
                 { token, start_date, end_date }
+            );
+            res.status(requisitions.status).json(requisitions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+router.route("/requisition/approve").post(
+    async (req, res, next) => {
+        const token = req.headers['token'];
+        const { id } = req.body;
+        
+        try {
+            const requisitions = await requisitionInteractorMongoDB.approve(
+                { requisitionApprove },
+                { token, id }
             );
             res.status(requisitions.status).json(requisitions);
         } catch (error) {
