@@ -22,14 +22,14 @@ router.route("/requisition/create").post(
   
     async (req, res, next) => {
 
-        const { event_name, start_date, end_date, approved, active, products } = req.body;
+        const { event_name, start_date, end_date, products } = req.body;
         const token = req.headers['token'];
        
         
         try {
             const requisition = await requisitionInteractorMongoDB.create(
                 { requisitionCreatePersistence },
-                { token, event_name, start_date, end_date, approved, active, products }
+                { token, event_name, start_date, end_date, products }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {

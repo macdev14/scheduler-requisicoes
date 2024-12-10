@@ -22,9 +22,6 @@ exports.create = async ({ requisitionCreatePersistence }, requisition) => {
 exports.getById = async ({ requisitionGetByIdPersistence }, { id, token }) => {
     try {
         const requisition = await requisitionGetByIdPersistence({ id, token});
-        if (!requisition) {
-            return { status: 404, message: "Requisition not found" };
-        }
         return requisition;
     } catch (error) {
         console.log(error);
@@ -36,9 +33,6 @@ exports.update = async ({ requisitionUpdatePersistence }, { id, event_name, star
     try {
         const updatedData = { id, event_name, start_date, end_date, approved, active, products, token };
         const result = await requisitionUpdatePersistence(updatedData);
-        if (!result) {
-            return { status: 404, message: "Requisition not found" };
-        }
         return result;
     } catch (error) {
         console.log(error);
@@ -49,9 +43,6 @@ exports.update = async ({ requisitionUpdatePersistence }, { id, event_name, star
 exports.delete = async ({ requisitionDeletePersistence }, { id, token }) => {
     try {
         const result = await requisitionDeletePersistence({id, token});
-        if (!result) {
-            return { status: 404, message: "Requisition not found" };
-        }
         return result;
     } catch (error) {
         console.log(error);
@@ -62,9 +53,6 @@ exports.delete = async ({ requisitionDeletePersistence }, { id, token }) => {
 exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
     try {
         const requisitions = await requisitionGetAllPersistence({ id, token });
-        if (!requisitions || requisitions.length === 0) {
-            return { status: 404, message: "No requisitions found" };
-        }
         return requisitions ;
     } catch (error) {
         console.log(error);
@@ -75,22 +63,16 @@ exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
 exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
     try {
         const requisitions = await requisitionGetAllPersistence({ id, token });
-        if (!requisitions || requisitions.length === 0) {
-            return { status: 404, message: "No requisitions found" };
-        }
         return requisitions ;
     } catch (error) {
         console.log(error);
         return { status: 500, message: "Something went wrong: " + error };
     }
 };
-exports.getCatalog = async ({ requisitionGetCatalog }, { token }) => {
+exports.getCatalog = async ({ requisitionGetCatalog }, { token, start_date, end_date }) => {
     try {
 
-        const requisitions = await requisitionGetCatalog({ token });
-        if (!requisitions || requisitions.length === 0) {
-            return { status: 404, message: "No requisitions found" };
-        }
+        const requisitions = await requisitionGetCatalog({ token, start_date, end_date });
         return requisitions ;
     } catch (error) {
         console.log(error);
