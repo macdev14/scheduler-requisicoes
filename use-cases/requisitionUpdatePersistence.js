@@ -36,7 +36,7 @@ exports.requisitionUpdatePersistence = async (requisition) => {
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_EXTERNAL) {
+            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_USER) {
                 const updateRequisition = {
                     user_id: decoded.id,
                     event_name,

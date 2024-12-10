@@ -11,7 +11,7 @@ const Requisition = mongoose.model("Requisition");
  
 exports.requisitionGetAllPersistence = async (requisition) => {
     
-    const {token, active} = requisition;
+    const {token} = requisition;
 
     try {
         if (!token) {
@@ -23,8 +23,8 @@ exports.requisitionGetAllPersistence = async (requisition) => {
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_EXTERNAL) {
-                const events = await Requisition.find({ active });
+            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_USER) {
+                const events = await Requisition.find({ active: true });
 
                 if (!events || events.length === 0) {
                     return { status: 404, message: "Requisitions not found" };

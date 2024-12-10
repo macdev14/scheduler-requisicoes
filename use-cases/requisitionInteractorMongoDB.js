@@ -21,8 +21,7 @@ exports.create = async ({ requisitionCreatePersistence }, requisition) => {
 
 exports.getById = async ({ requisitionGetByIdPersistence }, { id, token }) => {
     try {
-        const active = true;
-        const requisition = await requisitionGetByIdPersistence({ id, token, active });
+        const requisition = await requisitionGetByIdPersistence({ id, token});
         if (!requisition) {
             return { status: 404, message: "Requisition not found" };
         }
@@ -62,8 +61,33 @@ exports.delete = async ({ requisitionDeletePersistence }, { id, token }) => {
 
 exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
     try {
-        const active = true;
-        const requisitions = await requisitionGetAllPersistence({ active, id, token });
+        const requisitions = await requisitionGetAllPersistence({ id, token });
+        if (!requisitions || requisitions.length === 0) {
+            return { status: 404, message: "No requisitions found" };
+        }
+        return requisitions ;
+    } catch (error) {
+        console.log(error);
+        return { status: 500, message: "Something went wrong: " + error };
+    }
+};
+
+exports.getAll = async ({ requisitionGetAllPersistence }, { id, token }) => {
+    try {
+        const requisitions = await requisitionGetAllPersistence({ id, token });
+        if (!requisitions || requisitions.length === 0) {
+            return { status: 404, message: "No requisitions found" };
+        }
+        return requisitions ;
+    } catch (error) {
+        console.log(error);
+        return { status: 500, message: "Something went wrong: " + error };
+    }
+};
+exports.getCatalog = async ({ requisitionGetCatalog }, { token }) => {
+    try {
+
+        const requisitions = await requisitionGetCatalog({ token });
         if (!requisitions || requisitions.length === 0) {
             return { status: 404, message: "No requisitions found" };
         }

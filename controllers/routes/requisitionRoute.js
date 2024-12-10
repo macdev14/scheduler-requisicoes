@@ -3,6 +3,7 @@ const { requisitionUpdatePersistence} = require("../../use-cases/requisitionUpda
 const { requisitionDeletePersistence } = require("../../use-cases/requisitionDeletePersistence");
 const { requisitionGetByIdPersistence } = require("../../use-cases/requisitionGetByIdPersistence");
 const { requisitionGetAllPersistence } = require("../../use-cases/requisitionGetAllPersistence");
+const { requisitionGetCatalog } = require("../../use-cases/requisitionGetCatalog");
 const  requisitionInteractorMongoDB  = require("../../use-cases/requisitionInteractorMongoDB");
 
 const express = require("express");
@@ -22,15 +23,10 @@ router.route("/requisition/create").post(
     async (req, res, next) => {
 
         const { event_name, start_date, end_date, approved, active, products } = req.body;
-       
+        const token = req.headers['token'];
        
         
         try {
-            const token = req.headers['token'];
-            
-            if(!token || token==undefined || token==null){
-                throw new Error("token required");
-            }
             const requisition = await requisitionInteractorMongoDB.create(
                 { requisitionCreatePersistence },
                 { token, event_name, start_date, end_date, approved, active, products }
@@ -50,10 +46,10 @@ router.route("/requisition/create").post(
  */
 router.route("/requisition/getById").get(
     async (req, res, next) => {
-
+        const token = req.headers['token'];
         const { id } = req.body;
         try {
-            const token = req.headers['token'];
+            
             const requisition = await requisitionInteractorMongoDB.getById(
                 { requisitionGetByIdPersistence },
                 { id, token }
@@ -76,14 +72,10 @@ router.route("/requisition/getById").get(
 router.route("/requisition/update").put(
 
     async (req, res, next) => {
-
-       
-     
-
+        const {id, event_name, start_date, end_date, approved, active, products } = req.body;
+        const token = req.headers['token'];
         try {
-            const {id, event_name, start_date, end_date, approved, active, products } = req.body;
-            const token = req.headers['token'];
-           
+
             const requisition = await requisitionInteractorMongoDB.update(
                 { requisitionUpdatePersistence },
                 { id, event_name, start_date, end_date, approved, active, products, token }
@@ -103,7 +95,6 @@ router.route("/requisition/update").put(
  */
 router.route("/requisition/delete").put(
     async (req, res, next) => {
- 
         const { id } = req.body;
         const token = req.headers['token'];
         try {
@@ -125,13 +116,30 @@ router.route("/requisition/delete").put(
  */
 router.route("/requisition/getAll").get(
     async (req, res, next) => {
-        
+        const token = req.headers['token'];
         try {
-            const token = req.headers['token'];
-            const active = true;
+            
             const requisitions = await requisitionInteractorMongoDB.getAll(
                 { requisitionGetAllPersistence },
-                { active, token }
+                { token }
+            );
+            res.status(requisitions.status).json(requisitions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+router.route("/requisition/catalog").get(
+    async (req, res, next) => {
+        const token = req.headers['token'];
+        const { start_date, end_date } = req.body;
+        
+        try {
+
+            const requisitions = await requisitionInteractorMongoDB.getCatalog(
+                { requisitionGetCatalog },
+                { token, start_date, end_date }
             );
             res.status(requisitions.status).json(requisitions);
         } catch (error) {
