@@ -2,16 +2,16 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const moment = require('moment');
-const { approve } = require("./requisitionInteractorMongoDB");
 require('dotenv').config();
 require("../framework/db/mongoDB/models/requisitionModel");
 const Requisition = mongoose.model("Requisition");
 
 
-exports.requisitionCreatePersistence = async (requisition) => {  
+exports.requisitionApprove = async (requisition) => {  
     try {
-        const { id, token } = requisition;
-        
+        console.log(requisition)
+        const { id, token, products } = requisition;
+        const requisition_db = await Requisition.findById({_id: id, active: true});
         if (!id || !token) {
             return { status: 400, message: "token and id are required" }; 
         }
@@ -69,13 +69,50 @@ exports.requisitionCreatePersistence = async (requisition) => {
                     }
                 };
 
-                const db_products = await getProducts(token);
+                const createEvent = async ({id, token, name,start_date, end_date, description='', comments=''}) => {
+                    try {
 
+                        console.log("parse start date",parseDate(start_date))
+                        const response = await fetch(process.env.URL_EVENTS + '/api/event/create', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'token': token
+                            }, 
+                            body: JSON.stringify({
+                                name: name,
+                                start_date: start_date,
+                                end_date: end_date,
+                                requisition_id: id,
+                                
+                               
+                            })
+                        });
+                
+                        if (!response.ok) {
+                            console.error('Error:', response);
+                            return { status: response.status, message: response.message };
+                        }
+                        
+                        const data = await response.json();
+                       
+                       
+                        return { status: 200, message: "Event created", message: data };
+                       
+                    } catch (error) {
+                        console.error('Error:', error);
+                        return { status: 404, message: "Event could not be created" };
+                    }
+                };
+
+
+                const db_products = await getProducts(token);
+              
                 let product_results = {}
 
                 for (const product of db_products.products.data) {
                     const quantities = await getQuantities(token, product.id);
-                    console.log(quantities.stocks.data); 
+                   
                     const firstStock = Array.isArray(quantities.stocks.data) && quantities.stocks.data.length > 0 ? quantities.stocks.data[0].quantity :  0;
                 
                     product_results[product.id] = {
@@ -94,21 +131,27 @@ exports.requisitionCreatePersistence = async (requisition) => {
                 // })
                 // qntDoPro
                 //fazer um loop pelas reqs
-                //qntDoPro -= requisition.quantiy
+                // let qntDoPro = requisition.quantiy
 
 
                 // requisitions.forEach(requisition => { 
                 //         requisition.products.forEach(product_db => {
                 //             products.forEach(product => {
 
-                //                 if(product_db.id == product.id && !product_db.quantity < product.quantity){
-                //                     has = true
-                //                 }
-                //             })
+                //                 if(product_db.id == product.id){
+                //                     has = true 
+                //                     //&& !product_db.quantity < product.quantity
+                //                     qntDoPro -= product.quantity
+                //                 };
+                                
+                //             });
+
                 //         })
                 // })
+              
                 try {
                     products.forEach(product => {
+                       
                         if(typeof product != 'object' || !product.hasOwnProperty('id') || !product.hasOwnProperty('quantity')){
                             return { status: 400, message: "Products must be a JSON object with 'id' and 'quantity' fields" };
                         }
@@ -122,24 +165,34 @@ exports.requisitionCreatePersistence = async (requisition) => {
                 }
 
 
-                const createRequisition = {
-                    user_id: decoded.id,
-                    event_name,
-                    start_date: parsedStartDate,
-                    end_date: parsedEndDate,
-                    approved: false,
-                    active: true,
-                    products
-                };
-
-                const result = await Requisition.create(createRequisition);
-                console.log();
-                return { status: 201, id: result.id , message: "Requisition created successfully" };
+                // const createRequisition = {
+                //     user_id: decoded.id,
+                //     event_name: event_name,
+                //     start_date: parsedStartDate,
+                //     end_date: parsedEndDate,
+                //     approved: false,
+                //     active: true,
+                //     products
+                // };
+               
+              
+          
+                let obj = { id: requisition_db.id, 
+                    token: token, name:requisition_db.event_name,
+                     start_date: moment(requisition_db.start_date).format('DD/MM/YYYY'), 
+                     end_date: moment(requisition_db.end_date).format('DD/MM/YYYY')
+                }
+                console.log('obj')
+                console.log(obj);
+               
+                // const res = await Requisition.findByIdAndUpdate(id, {approved: true}, {new: true});
+                const res_event = await createEvent(obj);
+                return res_event
             }
             return ({status: 403, message: "Access denied. Insufficient permissions."});
         } catch (err) {
             console.log("err", err);
-            return ({status: 403, message: "Access denied"});
+            return err;
         }
     } catch (error) {
         console.log("error", error);

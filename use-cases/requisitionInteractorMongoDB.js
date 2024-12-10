@@ -79,10 +79,10 @@ exports.getCatalog = async ({ requisitionGetCatalog }, { token, start_date, end_
         return { status: 500, message: "Something went wrong: " + error };
     }
 };
-exports.approve = async ({ requisitionApprove }, { token, id }) => {
+exports.approve = async ({ requisitionApprove }, { token, id, products }) => {
     try {
 
-        const requisitions = await requisitionApprove({ token, id });
+        const requisitions = await requisitionApprove({ token, id, products });
         return requisitions ;
     } catch (error) {
         console.log(error);

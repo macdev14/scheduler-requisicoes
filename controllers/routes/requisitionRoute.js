@@ -152,12 +152,13 @@ router.route("/requisition/catalog").get(
 router.route("/requisition/approve").post(
     async (req, res, next) => {
         const token = req.headers['token'];
-        const { id } = req.body;
+        const { id, products } = req.body;
+        console.log(products)
         
         try {
             const requisitions = await requisitionInteractorMongoDB.approve(
                 { requisitionApprove },
-                { token, id }
+                { token, id, products }
             );
             res.status(requisitions.status).json(requisitions);
         } catch (error) {
