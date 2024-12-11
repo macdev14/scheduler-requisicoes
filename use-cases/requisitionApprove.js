@@ -9,7 +9,6 @@ const Requisition = mongoose.model("Requisition");
 
 exports.requisitionApprove = async (requisition) => {  
     try {
-        console.log(requisition)
         const { id, token, products } = requisition;
         const requisition_db = await Requisition.findById({_id: id, active: true});
         if (!id || !token) {
@@ -71,8 +70,6 @@ exports.requisitionApprove = async (requisition) => {
 
                 const createEvent = async ({id, token, name,start_date, end_date, description='', comments=''}) => {
                     try {
-
-                        console.log("parse start date",parseDate(start_date))
                         const response = await fetch(process.env.URL_EVENTS + '/api/event/create', {
                             method: 'POST',
                             headers: {
@@ -84,8 +81,8 @@ exports.requisitionApprove = async (requisition) => {
                                 start_date: start_date,
                                 end_date: end_date,
                                 requisition_id: id,
-                                
-                               
+                                description: description,
+                                comments: comments
                             })
                         });
                 
@@ -182,10 +179,7 @@ exports.requisitionApprove = async (requisition) => {
                      start_date: moment(requisition_db.start_date).format('DD/MM/YYYY'), 
                      end_date: moment(requisition_db.end_date).format('DD/MM/YYYY')
                 }
-                console.log('obj')
-                console.log(obj);
-               
-                // const res = await Requisition.findByIdAndUpdate(id, {approved: true}, {new: true});
+                const res = await Requisition.findByIdAndUpdate(id, {approved: true}, {new: true});
                 const res_event = await createEvent(obj);
                 return res_event
             }
