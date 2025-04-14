@@ -1,0 +1,10 @@
+node_modules
+build
+npm-debug.log
+.env
+k8s/aula
+k8s/testes
+uploads
+env-config-scheduler.env
+*.env
+package-lock.json
