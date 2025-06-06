@@ -1,9 +1,11 @@
 {
-    "name": "msautentication",
-    "version": "1.0.0",
-    "description": "AUTH API",
-    "title": "MS Autentication",
-    "template": {
-        "forceLanguage": "en"
-    }
+  "name": "Scheduler requisitions API",
+  "version": "1.0.0",
+  "description": "API for managing requisitions of nextcoming events",
+  "title": "Scheduler Inventory API Docs",
+  "url": "http://localhost:3000/api/v1",
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  }
 }

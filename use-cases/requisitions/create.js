@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const moment = require('moment');
 require('dotenv').config();
-require("../framework/db/mongoDB/models/requisitionModel");
+require("../../framework/db/mongoDB/models/requisitionModel");
 
 const parseDate = (dateString) => {
     const formats = ['DD/MM/YYYY', 'YYYY/MM/DD'];
@@ -14,13 +14,33 @@ const parseDate = (dateString) => {
 const Requisition = mongoose.model("Requisition");
 
 
-exports.requisitionCreatePersistence = async (requisition) => {  
+exports.requisitionsCreate = async (requisition) => {
     try {
-        const { event_name, start_date, end_date, products, token } = requisition;
-        
-        if (!event_name || !start_date || !end_date || !token || products.length == 0) {
-            return { status: 400, message: "token, event_name, products, start_date, and end_date are required" };
+        const { event_name, start_date, end_date, required_products, token } = requisition;
+
+        if (!event_name || !start_date || !end_date || !token) {
+            return { status: 400, message: "token, event_name, start_date, and end_date are required" };
         }
+
+        console.log(required_products);
+        if (!required_products || required_products.length == 0) {
+            return { status: 400, message: "required_products must be an array and must not be empty" };
+        }
+
+        const isValid = required_products.every(product => {
+            const isIdValid = typeof product.id === "string" && mongoose.Types.ObjectId.isValid(product.id);
+            const isQuantityValid = !isNaN(product.quantity) && Number(product.quantity) > 0;
+
+            return isIdValid && isQuantityValid;
+        });
+
+        if (!isValid) {
+            return {
+                status: 400,
+                message: "required_products must be an array of objects with valid Mongo IDs and numeric quantities",
+            };
+        }
+
         if (event_name.length > process.env.EVENT_NAME_MAX_SIZE) {
             return { status: 400, message: `event name must be less than ${process.env.EVENT_NAME_MAX_SIZE} characters` };
         }
@@ -38,36 +58,36 @@ exports.requisitionCreatePersistence = async (requisition) => {
         if (parsedEndDate < parsedStartDate) {
             return { status: 400, message: "end_date cannot be set to a date before start_date" };
         }
-        
+
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_USER) {
-                
+
                 const requisitions = await Requisition.find({
                     active: true,
                     $and: [
-                      {
-                        start_date: { $gte: parsedStartDate, $lte: parsedEndDate }
-                      },
-                      {
-                        end_date: { $gte: parsedStartDate, $lte: parsedEndDate }
-                      }
+                        {
+                            start_date: { $gte: parsedStartDate, $lte: parsedEndDate }
+                        },
+                        {
+                            end_date: { $gte: parsedStartDate, $lte: parsedEndDate }
+                        }
                     ]
                 });
                 const getQuantities = async (token, product_id) => {
                     try {
-                        const response = await fetch(process.env.URL_INVENTORY + '/api/stock?product_id=' + product_id, {
+                        const response = await fetch(process.env.URL_INVENTORY + 'stocks?product_id=' + product_id, {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'token': token
                             }
                         });
-                
+
                         if (!response.ok) {
                             throw new Error('Failed to fetch products in stock');
                         }
-                
+
                         const data = await response.json();
 
                         return { status: 200, message: "Available products", stocks: data };
@@ -85,11 +105,11 @@ exports.requisitionCreatePersistence = async (requisition) => {
                                 'token': token
                             }
                         });
-                
+
                         if (!response.ok) {
                             throw new Error('Failed to fetch products');
                         }
-                
+
                         const data = await response.json();
                         return { status: 200, message: "Available products", products: data };
                     } catch (error) {
@@ -104,17 +124,17 @@ exports.requisitionCreatePersistence = async (requisition) => {
 
                 for (const product of db_products.products.data) {
                     const quantities = await getQuantities(token, product.id);
-                    console.log(quantities.stocks.data); 
-                    const firstStock = Array.isArray(quantities.stocks.data) && quantities.stocks.data.length > 0 ? quantities.stocks.data[0].quantity :  0;
-                
+                    console.log(quantities.stocks.data);
+                    const firstStock = Array.isArray(quantities.stocks.data) && quantities.stocks.data.length > 0 ? quantities.stocks.data[0].quantity : 0;
+
                     product_results[product.id] = {
                         name: product.name,
                         quantity: firstStock
                     };
                 }
 
-                if(!requisitions || requisitions.length == 0){
-             
+                if (!requisitions || requisitions.length == 0) {
+
                     // return ({status: 200, message: "Available products", products: product_results});
                 }
 
@@ -138,11 +158,11 @@ exports.requisitionCreatePersistence = async (requisition) => {
                 // })
                 try {
                     products.forEach(product => {
-                        if(typeof product != 'object' || !product.hasOwnProperty('id') || !product.hasOwnProperty('quantity')){
+                        if (typeof product != 'object' || !product.hasOwnProperty('id') || !product.hasOwnProperty('quantity')) {
                             return { status: 400, message: "Products must be a JSON object with 'id' and 'quantity' fields" };
                         }
-    
-                        if(typeof product.id != 'number' || typeof product.quantity != 'number'){
+
+                        if (typeof product.id != 'number' || typeof product.quantity != 'number') {
                             return { status: 400, message: "Product 'id' and 'quantity' must be numbers" };
                         }
                     });
@@ -163,12 +183,12 @@ exports.requisitionCreatePersistence = async (requisition) => {
 
                 const result = await Requisition.create(createRequisition);
                 console.log();
-                return { status: 201, id: result.id , message: "Requisition created successfully" };
+                return { status: 201, id: result.id, message: "Requisition created successfully" };
             }
-            return ({status: 403, message: "Access denied. Insufficient permissions."});
+            return ({ status: 403, message: "Access denied. Insufficient permissions." });
         } catch (err) {
             console.log("err", err);
-            return ({status: 403, message: "Access denied"});
+            return ({ status: 403, message: "Access denied" });
         }
     } catch (error) {
         console.log("error", error);

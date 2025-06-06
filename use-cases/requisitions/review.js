@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const moment = require('moment');
 require('dotenv').config();
-require("../framework/db/mongoDB/models/requisitionModel");
+require("../../framework/db/mongoDB/models/requisitionModel");
 const Requisition = mongoose.model("Requisition");
 
 
-exports.requisitionApprove = async (requisition) => {  
+exports.requisitionsReview = async (requisition) => {  
     try {
         const { id, token, products } = requisition;
         const requisition_db = await Requisition.findById({_id: id, active: true});

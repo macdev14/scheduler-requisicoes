@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const moment = require('moment');
 require('dotenv').config();
-require("../framework/db/mongoDB/models/requisitionModel");
+require("../../framework/db/mongoDB/models/requisitionModel");
 const Requisition = mongoose.model("Requisition");
 
 const parseDate = (dateString) => {

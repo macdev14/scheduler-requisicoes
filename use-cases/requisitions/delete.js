@@ -1,12 +1,11 @@
 'use strict';
-
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
-require("../framework/db/mongoDB/models/requisitionModel");
+require("../../framework/db/mongoDB/models/requisitionModel");
 
 const Requisition = mongoose.model("Requisition");
-exports.requisitionGetByIdPersistence = async ({id, token}) => {
+exports.requisitionsDelete = async ({ id, token }) => {
   
 
     try {
@@ -16,15 +15,14 @@ exports.requisitionGetByIdPersistence = async ({id, token}) => {
 
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
-
-            if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_USER) {
-                const requisition = await Requisition.findById({_id: id, active: true});
-
-                if (!requisition) {
-                    return { status: 404, message: "Requisition not found" };
-                }
-                return { status: 200, message: requisition };
+        
+           const has_auth = decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER || decoded.role == process.env.ROLE_USER;
+            if (has_auth) {
+                   
+                    const result = await Requisition.updateOne({ _id:id, active: true }, { $set: { active: false } });
+                    return result ? { status: 200, message: "Deleted Successfully" } : { status: 404, message: "Requisition not found" };
             }
+
             return ({status: 403, message: "Access denied. Insufficient permissions."});
         } catch (err) {
             console.log("err", err);

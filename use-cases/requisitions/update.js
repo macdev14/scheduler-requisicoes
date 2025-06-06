@@ -5,7 +5,7 @@ const moment = require('moment');
 require('dotenv').config();
 
 
-require("../framework/db/mongoDB/models/requisitionModel");
+require("../../framework/db/mongoDB/models/requisitionModel");
 const Requisition = mongoose.model("Requisition");
 const parseDate = (dateString) => {
     const formats = ['DD/MM/YYYY', 'YYYY/MM/DD'];
@@ -13,7 +13,7 @@ const parseDate = (dateString) => {
     return date.isValid() ? date.toDate() : null;
 };
 
-exports.requisitionUpdatePersistence = async (requisition) => {
+exports.requisitionsUpdate = async (requisition) => {
    
     try {
         const { id, event_name, start_date, end_date, approved, active, products, token } = requisition;
