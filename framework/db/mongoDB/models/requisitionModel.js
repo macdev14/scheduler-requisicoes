@@ -10,12 +10,22 @@ const RequiredProductSchema = new mongoose.Schema({
   quantity: { type: Number, required: true }
 });
 
+const AddressSchema = new mongoose.Schema({
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  postal_code: { type: String, required: true },
+  country: { type: String, required: true },
+  latitude: { type: Number, required: true },
+  longitude: { type: Number, required: true }
+});
+
 const RequisitionSchema = new mongoose.Schema({
   user_id: { type: String, required: true },
   event_name: { type: String, required: true },
   start_date: { type: Date, required: true },
   end_date: { type: Date, required: true },
   required_products: { type: [RequiredProductSchema], required: true }, // Array of products
+  address: { type: AddressSchema, required: true },
   approved: { type: Boolean, default: false },
   active: { type: Boolean, default: true }
 });

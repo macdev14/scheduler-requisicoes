@@ -21,14 +21,14 @@ router.route("/requisitions").post(
   
     async (req, res, next) => {
 
-        const { event_name, start_date, end_date, required_products } = req.body;
+        const { event_name, start_date, end_date, required_products, address } = req.body;
         const token = req.headers['token'];
        
         
         try {
             const requisition = await interactor.createRequisitions(
                 { requisitionsCreate},
-                { token, event_name, start_date, end_date, required_products }
+                { token, event_name, start_date, end_date, required_products, address }
             );
             res.status(requisition.status).json(requisition);
         } catch (error) {

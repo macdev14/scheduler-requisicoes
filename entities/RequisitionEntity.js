@@ -1,12 +1,22 @@
 exports.RequisitionEntity = class RequisitionEntity {
-    constructor(requisition) {
+constructor(requisition) {
         this.token = requisition.token;
         this.event_name = requisition.event_name;
         this.start_date = requisition.start_date || new Date();
         this.end_date = requisition.end_date || null;
         this.required_products = requisition.required_products || [];
+        
+        this.address = {
+            street: requisition.address?.street || '',
+            city: requisition.address?.city || '',
+            postal_code: requisition.address?.postal_code || '',
+            country: requisition.address?.country || '',
+            latitude: requisition.address?.latitude || 0,
+            longitude: requisition.address?.longitude || 0
+        };
+
         this.active = requisition.active !== undefined ? requisition.active : true;
-        this.approved = requisition.approved !== undefined ? requisition.approved : true;
+        this.approved = requisition.approved !== undefined ? requisition.approved : false;
     }
 
     async validator() {
