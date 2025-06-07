@@ -5,7 +5,7 @@ require('dotenv').config();
 require("../../framework/db/mongoDB/models/requisitionModel");
 
 const Requisition = mongoose.model("Requisition");
-exports.requisitionsDelete = async ({ id, token }) => {
+exports.requisitionsRestore = async ({ id, token }) => {
 
     try {
         if (!token || !id) {
@@ -20,22 +20,15 @@ exports.requisitionsDelete = async ({ id, token }) => {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
             if (decoded.role == process.env.ROLE_ADMIN || decoded.role == process.env.ROLE_MANAGER) {
-                const requisition = await Requisition.updateOne({ _id: id, active: true }, { $set: { active: false } });
+                const requisition = await Requisition.updateOne({ _id: id, active: false }, { $set: { active: true } });
 
                 if (!requisition) {
                     return { status: 404, message: "Requisition not found" };
                 }
 
                 return { status: 200, message: "Requisition deleted successfully", data: requisition };
-            } else if (decoded.role == process.env.ROLE_USER) {
-                const requisition = await Requisition.updateOne({ _id: id, user_id: decoded.id, active: true }, { $set: { active: false } });
+            } 
 
-                if (!requisition) {
-                    return { status: 404, message: "Requisition not found" };
-                }
-
-                return { status: 200, message: "Requisition deleted successfully", data: requisition };
-            }
             return ({ status: 403, message: "Access denied. Insufficient permissions." });
         } catch (err) {
             console.log("err", err);

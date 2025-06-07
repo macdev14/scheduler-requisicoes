@@ -1,10 +1,10 @@
 'use strict';
 
-const { RequisitionEntity } = require("../../entities/RequisitionEntity");
+const { RequisitionJwtEntity } = require("../../entities/RequisitionJwtEntity");
 
 exports.createRequisitions = async ({ requisitionsCreate }, requisition) => {
     try {
-        const requisitionEntity = new RequisitionEntity(requisition);
+        const requisitionEntity = new RequisitionJwtEntity(requisition);
         const createRequisition = await requisitionsCreate(requisitionEntity);
         return createRequisition;
     } catch (error) {
@@ -23,9 +23,9 @@ exports.getRequisitionsById = async ({ requisitionsGetById }, { id, token }) => 
     }
 };
 
-exports.updateRequisitions = async ({ requisitionsUpdate }, { id, event_name, start_date, end_date, approved, active, products, token }) => {
+exports.updateRequisitions = async ({ requisitionsUpdate }, { id, event_name, start_date, end_date, required_products, address, token }) => {
     try {
-        const updatedData = { id, event_name, start_date, end_date, approved, active, products, token };
+        const updatedData = { id, event_name, start_date, end_date, required_products, address, token };
         const result = await requisitionsUpdate(updatedData);
         return result;
     } catch (error) {
@@ -44,9 +44,19 @@ exports.deleteRequisitions = async ({ requisitionsDelete }, { id, token }) => {
     }
 };
 
-exports.getRequisitions = async ({ requisitionsGetAll }, { id, token }) => {
+exports.restoreRequisitions = async ({ requisitionsRestore }, { id, token }) => {
     try {
-        const requisitions = await requisitionsGetAll({ id, token });
+        const result = await requisitionsRestore({id, token});
+        return result;
+    } catch (error) {
+        console.log(error);
+        return { status: 500, message: "Something went wrong: " + error };
+    }
+};
+
+exports.getRequisitions = async ({ requisitionsGet }, {token, page, limit, search, approved, user_id, start_date, end_date, active}) => {
+    try {
+        const requisitions = await requisitionsGet({token, page, limit, search, approved, user_id, start_date, end_date, active});
         return requisitions ;
     } catch (error) {
         console.log(error);
@@ -54,10 +64,10 @@ exports.getRequisitions = async ({ requisitionsGetAll }, { id, token }) => {
     }
 };
 
-exports.reviewRequisitions = async ({ requisitionsReview }, { token, id, products }) => {
+exports.reviewRequisitions = async ({ requisitionsReview }, { token, id, review }) => {
     try {
 
-        const requisitions = await requisitionsReview({ token, id, products });
+        const requisitions = await requisitionsReview({ token, id, review });
         return requisitions ;
     } catch (error) {
         console.log(error);

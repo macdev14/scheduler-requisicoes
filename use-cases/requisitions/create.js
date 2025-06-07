@@ -25,10 +25,10 @@ exports.requisitionsCreate = async (requisition) => {
         } = requisition;
 
         // Basic field validation
-        if (!event_name || !start_date || !end_date || !token || !address.street || !address.city || !address.postal_code || !address.country || !address.latitude || !address.longitude) {
+        if (!event_name || !start_date || !end_date || !token || !address.street || !address.district || !address.municipality || !address.locality || !address.postal_code || !address.latitude || !address.longitude) {
             return {
                 status: 400,
-                message: "token, event_name, start_date, end_date, address, city, postal_code, country, latitude and longitude are required",
+                message: "token, event_name, start_date, end_date, address, street, district, municipality, locality, postal_code, latitude and longitude are required",
             };
         }
 
