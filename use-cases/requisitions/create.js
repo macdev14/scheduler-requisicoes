@@ -5,6 +5,9 @@ const moment = require('moment');
 require('dotenv').config();
 require("../../framework/db/mongoDB/models/requisitionModel");
 
+// Converts a date string into a valid JavaScript Date object.
+// Accepts either 'DD/MM/YYYY' or 'YYYY/MM/DD' formats.
+// If the input is not valid, returns null.
 const parseDate = (dateString) => {
     const formats = ['DD/MM/YYYY', 'YYYY/MM/DD'];
     const date = moment(dateString, formats, true);
@@ -12,6 +15,10 @@ const parseDate = (dateString) => {
 };
 
 const Requisition = mongoose.model("Requisition");
+
+// Creates a new requisition, performing validation on input fields,
+// checking availability of products for the given date range, 
+// and ensuring the user has a valid token and permissions.
 
 exports.requisitionsCreate = async (requisition) => {
     try {
@@ -24,14 +31,18 @@ exports.requisitionsCreate = async (requisition) => {
             token,
         } = requisition;
 
-        // Basic field validation
-        if (!event_name || !start_date || !end_date || !token || !address.street || !address.district || !address.municipality || !address.locality || !address.postal_code || !address.latitude || !address.longitude) {
+        // Basic field validation (required fields)
+        if (!event_name || !start_date || !end_date || !token ||
+            !address.street || !address.district || !address.municipality ||
+            !address.locality || !address.postal_code ||
+            !address.latitude || !address.longitude) {
             return {
                 status: 400,
                 message: "token, event_name, start_date, end_date, address, street, district, municipality, locality, postal_code, latitude and longitude are required",
             };
         }
 
+        // Validate required_products is a non-empty array
         if (!required_products || !Array.isArray(required_products) || required_products.length === 0) {
             return {
                 status: 400,
@@ -39,6 +50,7 @@ exports.requisitionsCreate = async (requisition) => {
             };
         }
 
+        // Validate that each product has a valid Mongo ID and a numeric quantity > 0
         const areProductsValid = required_products.every((product) => {
             const isIdValid = typeof product.id === "string" && mongoose.Types.ObjectId.isValid(product.id);
             const isQuantityValid = !isNaN(product.quantity) && Number(product.quantity) > 0;
@@ -52,6 +64,7 @@ exports.requisitionsCreate = async (requisition) => {
             };
         }
 
+        // Enforce event name length limit
         if (event_name.length > process.env.EVENT_NAME_MAX_SIZE) {
             return {
                 status: 400,
@@ -59,6 +72,7 @@ exports.requisitionsCreate = async (requisition) => {
             };
         }
 
+        // Parse and validate dates
         const parsedStartDate = parseDate(start_date);
         const parsedEndDate = parseDate(end_date);
         if (!parsedStartDate || !parsedEndDate) {
@@ -68,6 +82,7 @@ exports.requisitionsCreate = async (requisition) => {
             };
         }
 
+        // Dates must not be in the past
         if (parsedStartDate < new Date() || parsedEndDate < new Date()) {
             return {
                 status: 400,
@@ -75,6 +90,7 @@ exports.requisitionsCreate = async (requisition) => {
             };
         }
 
+        // End date must not precede start date
         if (parsedEndDate < parsedStartDate) {
             return {
                 status: 400,
@@ -82,7 +98,7 @@ exports.requisitionsCreate = async (requisition) => {
             };
         }
 
-
+        // Validate latitude and longitude values
         if (isNaN(address.latitude) || address.latitude < -90 || address.latitude > 90) {
             return { status: 400, message: "latitude must be a number between -90 and 90" };
         }
@@ -91,10 +107,12 @@ exports.requisitionsCreate = async (requisition) => {
             return { status: 400, message: "longitude must be a number between -180 and 180" };
         }
 
+        // Verify and decode token to retrieve user role
         let decoded = '';
         try {
             decoded = jwt.verify(token, process.env.SECRET_KEY);
 
+            // Only specific roles are allowed to create a requisition
             if (
                 decoded.role !== process.env.ROLE_ADMIN &&
                 decoded.role !== process.env.ROLE_MANAGER &&
@@ -106,8 +124,7 @@ exports.requisitionsCreate = async (requisition) => {
             return { status: 403, message: "Access denied" };
         }
 
-
-
+        // Get all overlapping active requisitions for the selected date range
         const existingRequisitions = await Requisition.find({
             active: true,
             $and: [
@@ -116,6 +133,7 @@ exports.requisitionsCreate = async (requisition) => {
             ],
         });
 
+        // Fetch the current stock of a product
         const getQuantities = async (token, product_id) => {
             const response = await fetch(
                 `${process.env.URL_INVENTORY}stocks?product_id=${product_id}`,
@@ -125,26 +143,31 @@ exports.requisitionsCreate = async (requisition) => {
             return data.data?.[0]?.quantity || 0;
         };
 
+        // Verify that all requested products have enough available stock
         const checkAvailability = async () => {
             const availability = {};
 
             for (const { id, quantity } of required_products) {
                 const available = await getQuantities(token, id);
 
+                // Calculate how much is already reserved in overlapping requisitions
                 const reserved = existingRequisitions.reduce((total, req) => {
                     const product = req.required_products.find(p => p.id === id);
                     return product ? total + product.quantity : total;
                 }, 0);
 
+                // If not enough stock is available, reject the requisition
                 if (available - reserved < quantity) {
                     return { status: 400, message: `Product ${id} does not have enough stock.` };
                 }
             }
         };
 
+        // Run availability check
         const check = await checkAvailability();
         if (check) return check;
 
+        // Create the new requisition object
         const newRequisition = {
             user_id: decoded.id,
             event_name,
@@ -156,6 +179,7 @@ exports.requisitionsCreate = async (requisition) => {
             address: requisition.address,
         };
 
+        // Insert requisition into the database
         const result = await Requisition.create(newRequisition);
         return { status: 201, id: result.id, message: "Requisition created successfully" };
     } catch (error) {

@@ -10,13 +10,22 @@ const express = require("express");
 
 const router = express.Router();
 
+
 /**
- * @api {post} /requisitions Create Requisition
+ * @api {post} /requisitions Create a requisition
  * @apiName CreateRequisition
- * @apiGroup Requisition
- * @apiParam {String} title Requisition title
- * @apiParam {String} description Requisition description
- * @apiParam {String} token JSON Web Token for authentication
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
+ * @apiParam {String} event_name Event name
+ * @apiParam {Date} start_date Start date of the event
+ * @apiParam {Date} end_date End date of the event
+ * @apiParam {Object} required_products Required products
+ * @apiParam {String} address Address
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} Requisition created successfully
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 500 Internal Server Error
  */
 router.route("/requisitions").post(
 
@@ -38,11 +47,19 @@ router.route("/requisitions").post(
     }
 );
 
+
 /**
- * @api {get} /requisitions/:id Get Requisition by ID
+ * @api {get} /requisitions/:id Get a requisition by ID
  * @apiName GetRequisitionById
- * @apiGroup Requisition
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
  * @apiParam {String} id Requisition ID
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} Requisition
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 404 Requisition not found
+ * @apiError {Error} 500 Internal Server Error
  */
 router.route("/requisitions/:id").get(
     async (req, res, next) => {
@@ -61,13 +78,24 @@ router.route("/requisitions/:id").get(
     }
 );
 
+
 /**
- * @api {put} /requisitions/:id Update Requisition
+ * @api {put} /requisitions/:id Update a requisition
  * @apiName UpdateRequisition
- * @apiGroup Requisition
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
  * @apiParam {String} id Requisition ID
- * @apiParam {String} title Requisition title
- * @apiParam {String} description Requisition description
+ * @apiParam {String} event_name Event name
+ * @apiParam {Date} start_date Start date of the event
+ * @apiParam {Date} end_date End date of the event
+ * @apiParam {Object} required_products Required products
+ * @apiParam {String} address Address
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} Requisition updated successfully
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 404 Requisition not found
+ * @apiError {Error} 500 Internal Server Error
  */
 router.route("/requisitions/:id").put(
 
@@ -88,11 +116,19 @@ router.route("/requisitions/:id").put(
     }
 );
 
+
 /**
- * @api {delete} /requisitions/:id Delete Requisition
+ * @api {patch} /requisitions/:id/delete Soft delete a requisition
  * @apiName DeleteRequisition
- * @apiGroup Requisition
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
  * @apiParam {String} id Requisition ID
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} Requisition deleted successfully
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 404 Requisition not found
+ * @apiError {Error} 500 Internal Server Error
  */
 router.route("/requisitions/:id/delete").patch(
     async (req, res, next) => {
@@ -111,6 +147,19 @@ router.route("/requisitions/:id/delete").patch(
 );
 
 
+/**
+ * @api {patch} /requisitions/:id/restore Restore a soft deleted requisition
+ * @apiName RestoreRequisition
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
+ * @apiParam {String} id Requisition ID
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} Requisition restored successfully
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 404 Requisition not found
+ * @apiError {Error} 500 Internal Server Error
+ */
 router.route("/requisitions/:id/restore").patch(
     async (req, res, next) => {
         const id = req.params.id;
@@ -127,10 +176,25 @@ router.route("/requisitions/:id/restore").patch(
     }
 );
 
+
 /**
- * @api {get} /requisitions Get All Requisitions
- * @apiName GetAllRequisitions
- * @apiGroup Requisition
+ * @api {get} /requisitions Get a list of requisitions
+ * @apiName GetRequisitions
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
+ * @apiParam {Number} page Page number
+ * @apiParam {Number} limit Number of items per page
+ * @apiParam {String} search Search by event name
+ * @apiParam {Boolean} approved Filter by approval status
+ * @apiParam {String} user_id Filter by user ID
+ * @apiParam {Date} start_date Filter by start date
+ * @apiParam {Date} end_date Filter by end date
+ * @apiParam {Boolean} active Filter by active status
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} List of requisitions
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 500 Internal Server Error
  */
 router.route("/requisitions").get(
     async (req, res, next) => {
@@ -157,6 +221,21 @@ router.route("/requisitions").get(
     }
 );
 
+
+/**
+ * @api {patch} /requisitions/:id/review Review a requisition
+ * @apiName ReviewRequisition
+ * @apiGroup Requisitions
+ * @apiPermission authenticated user
+ * @apiParam {String} id Requisition ID
+ * @apiParam {String} review Review text
+ * @apiParam {String} token User token
+ * @apiSuccess {Object} Requisition reviewed successfully
+ * @apiError {Error} 400 Missing or invalid parameters
+ * @apiError {Error} 401 Unauthorized
+ * @apiError {Error} 404 Requisition not found
+ * @apiError {Error} 500 Internal Server Error
+ */
 router.route("/requisitions/:id/review").patch(
     async (req, res, next) => {
         const token = req.headers['token'];

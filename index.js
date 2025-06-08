@@ -32,10 +32,11 @@ app.use(bodyParser.urlencoded({ extended: true })); //allowing for extended synt
 const api_v01 = '/api/v01/';
 
 //routes
-app.use('/', express.static(path.join(__dirname, 'public'))); //available static route at http://localhost:2003
-app.use(api_v01 + 'docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); //serve api documentation
-app.use(api_v01 + 'docjs', express.static('./public/apidocjs')); //available route at http://localhost:2003/api-docjs/
-app.use(api_v01, require("./controllers/routes/requisitionRoute")); //user route
+app.use('/', express.static(path.join(__dirname, 'public'))); 
+app.use(api_v01 + 'docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); 
+app.use(api_v01 + 'docjs', express.static('./public/apidocjs')); 
+app.use(api_v01, require("./controllers/routes/requisitionRoute")); //requisition route
+app.use(api_v01, require("./controllers/routes/catalogRoute")); //catalog route
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");
